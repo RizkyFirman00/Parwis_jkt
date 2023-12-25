@@ -17,6 +17,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
+    sortData();
     filteredData = DataPariwisata.data;
     super.initState();
   }
@@ -34,10 +35,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       if (isSortedAscending) {
         // Sort in ascending order
-        filteredData.sort((a, b) => a.nama.compareTo(b.nama));
+        DataPariwisata.data.sort((a, b) => a.nama.compareTo(b.nama));
       } else {
         // Sort in descending order
-        filteredData.sort((a, b) => b.nama.compareTo(a.nama));
+        DataPariwisata.data.sort((a, b) => b.nama.compareTo(a.nama));
       }
       isSortedAscending = !isSortedAscending;
     });
@@ -132,32 +133,41 @@ class DataSearch extends SearchDelegate<String> {
 
   @override
   Widget buildResults(BuildContext context) {
-    return Container(); // You can customize the search results UI here
+    // You can customize the search results UI here
+    return Container();
   }
 
   @override
   Widget buildSuggestions(BuildContext context) {
-    Future.delayed(Duration.zero, () {
-      filterFunction(query);
-    });
+    // Filter the data based on the current query
+    final suggestionList = filteredData
+        .where((pariwisata) =>
+            pariwisata.nama.toLowerCase().contains(query.toLowerCase()))
+        .toList();
 
-    return ListView.builder(
-      itemCount: filteredData.length,
-      itemBuilder: (context, index) {
-        return ListTile(
-          title: Text(filteredData[index].nama),
-          onTap: () {
-            // You can handle item selection here, e.g., navigate to detail page
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    DetailPage(pariwisata: filteredData[index]),
-              ),
-            );
-          },
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.only(
+        bottom: 20,
+        left: 20,
+        right: 20,
+      ),
+      child: ListView.builder(
+        itemCount: suggestionList.length,
+        itemBuilder: (context, index) {
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      DetailPage(pariwisata: suggestionList[index]),
+                ),
+              );
+            },
+            child: ItemParwis(pariwisata: suggestionList[index]),
+          );
+        },
+      ),
     );
   }
 }
